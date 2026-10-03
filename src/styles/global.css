@@ -1,0 +1,27 @@
+body {
+    margin: 0;
+    font: 1rem/1.6 var(--font-sans);
+    color: var(--color-foreground);
+    background: var(--color-background);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+button:not(:disabled) {
+    cursor: pointer;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
