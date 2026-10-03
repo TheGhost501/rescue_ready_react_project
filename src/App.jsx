@@ -1,5 +1,4 @@
-// TEMPORARY: step 2 component check page. Replaced by the route table in step 3.
-import { BrowserRouter } from 'react-router'
+
 import Button from './components/ui/Button'
 import EmptyState from './components/ui/EmptyState'
 import ErrorMessage from './components/ui/ErrorMessage'
@@ -8,7 +7,6 @@ import Spinner from './components/ui/Spinner'
 
 function App() {
   return (
-    <BrowserRouter>
       <main style={{ maxWidth: 'var(--container)', margin: '0 auto', padding: 'var(--space-6)', display: 'grid', gap: 'var(--space-6)' }}>
         <h1>RescueReady</h1>
 
@@ -35,7 +33,6 @@ function App() {
         <ErrorMessage message="Could not load courses." onRetry={() => alert('retry')} />
         <EmptyState message="No courses found." linkTo="/" linkLabel="Clear filters" />
       </main>
-    </BrowserRouter>
   )
 }
 
