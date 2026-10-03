@@ -1,0 +1,23 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-12) var(--space-4);
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.message {
+  margin: 0;
+  font-size: var(--text-lg);
+}
+
+.link {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.link:hover {
+  color: var(--color-primary-hover);
+}
