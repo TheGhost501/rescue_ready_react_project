@@ -49,8 +49,8 @@ Built as the exam project for the SoftUni ReactJS course.
 ### 1. Install
 
 ```bash
-git clone <repository-url>
-cd <repository-folder>
+git clone https://github.com/TheGhost501/rescue_ready_react_project.git
+cd rescue_ready_react_project
 npm install
 ```
 
