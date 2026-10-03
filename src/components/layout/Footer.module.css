@@ -1,0 +1,12 @@
+/* src/components/layout/Footer.module.css */
+.footer {
+  background: var(--color-secondary);
+  color: var(--color-on-secondary);
+}
+
+.inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+  font-size: var(--text-sm);
+}

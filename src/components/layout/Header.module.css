@@ -1,0 +1,66 @@
+/* src/components/layout/Header.module.css */
+.header {
+  background: var(--color-secondary);
+  color: var(--color-on-secondary);
+}
+
+.inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: var(--space-6);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
+  color: inherit;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: var(--space-6);
+}
+
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border-bottom: 2px solid transparent;
+  color: inherit;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link[aria-current='page'] {
+  border-bottom-color: currentColor;
+  color: var(--color-accent);
+}
+
+.logo:focus-visible,
+.link:focus-visible {
+  outline-color: var(--color-on-secondary);
+}
