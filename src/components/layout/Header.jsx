@@ -1,4 +1,3 @@
-// src/components/layout/Header.jsx
 import { Link, NavLink } from 'react-router'
 import styles from './Header.module.css'
 
