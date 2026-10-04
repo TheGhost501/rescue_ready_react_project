@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import CourseCard from '../components/courses/CourseCard'
 import EmptyState from '../components/ui/EmptyState'
 import ErrorMessage from '../components/ui/ErrorMessage'
 import Spinner from '../components/ui/Spinner'
 import { getCourses } from '../services/courseService'
+import styles from './Catalog.module.css'
 
 export default function Catalog() {
   const [state, setState] = useState({ status: 'loading', courses: [], error: '' })
@@ -39,9 +41,11 @@ export default function Catalog() {
         <EmptyState message="No courses have been published yet." />
       )}
       {state.status === 'success' && state.courses.length > 0 && (
-        <ul>
+        <ul className={styles.grid}>
           {state.courses.map((course) => (
-            <li key={course.id}>{course.title}</li>
+            <li key={course.id}>
+              <CourseCard course={course} />
+            </li>
           ))}
         </ul>
       )}
