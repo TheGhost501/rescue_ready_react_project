@@ -15,3 +15,15 @@ export async function getCourses({ when = 'all' } = {}) {
   if (error) throw new Error(toMessage(error))
   return data
 }
+
+export async function getCourse(courseId) {
+  const { data, error } = await supabase
+    .from('course_catalog')
+    .select('*')
+    .eq('id', courseId)
+    .maybeSingle()
+
+  if (error?.code === '22P02') return null // the id in the URL is not a valid uuid
+  if (error) throw new Error(toMessage(error))
+  return data // null when there is no such course
+}
