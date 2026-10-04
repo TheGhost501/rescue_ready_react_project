@@ -72,7 +72,7 @@ flowchart LR
     ├── components/
     │   ├── layout/             Layout, Header, Footer
     │   ├── ui/                 Button, Field, Spinner, ErrorMessage, EmptyState, ConfirmDialog
-    │   ├── courses/            CourseCard, CourseForm, CourseFilters, BookingButton
+    │   ├── courses/            CourseCard, CourseImage, CourseForm, CourseFilters, BookingButton
     │   └── reviews/            ReviewList, ReviewForm
     ├── pages/                  one component per route
     ├── utils/                  validators, formatters, error messages, constants
@@ -159,7 +159,7 @@ Guard behaviour:
 |---|---|---|
 | Home | CourseCard | Next upcoming courses |
 | Catalog | CourseFilters, CourseCard, Spinner, ErrorMessage, EmptyState | Courses, filtered (title, category, upcoming or past) and sorted by the API |
-| Course details | BookingButton, ReviewList, ReviewForm, ConfirmDialog | One course, its reviews, the user's booking |
+| Course details | CourseImage, BookingButton, ReviewList, ReviewForm, ConfirmDialog | One course, its reviews, the user's booking |
 | Create course | CourseForm | – |
 | Edit course | CourseForm | One course |
 | My courses | CourseCard, EmptyState | Courses the instructor teaches |

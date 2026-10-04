@@ -130,7 +130,7 @@ Tables: `profiles`, `courses`, `bookings`, `reviews`, plus a `course_catalog` vi
 
 Access rules live in the database (Row Level Security), not only in the UI: anyone can read courses and reviews, only an instructor can publish a course, only the author can change a course or a review, and a booking is visible only to the user who made it.
 
-Note for reviewers: Supabase pauses free projects after a week without activity. A scheduled job pings the database to keep it awake. If the catalog fails to load on first visit, wait a minute and use the Retry button.
+Note for reviewers: Supabase pauses free projects after a week without activity. A scheduled job pings the database to keep it awake. If the catalog fails to load on first visit, wait a minute and use the "Try again" button.
 
 ## 7. Data Operations (CRUD)
 
@@ -235,7 +235,7 @@ Consumers: the header (which links to show for a guest, a learner or an instruct
 
 ### Component Styling
 
-Each component has its own CSS Module (`Component.module.css`) next to it. A global `index.css` holds the reset and the shared design tokens (colours, spacing, font sizes) as CSS variables.
+Each component has its own CSS Module (`Component.module.css`) next to it. Two global files in `src/styles` apply to the whole app: `tokens.css` holds the shared design tokens (colours, spacing, font sizes) as CSS variables, and `global.css` holds the reset and base element styles.
 
 ## 10. Typical User Flow
 
@@ -254,7 +254,7 @@ Wrong email or password, or an email that is already registered, is shown as a m
 
 ### Network or data errors
 
-Every page that loads data has three states: a loader while waiting, the content, and an error message with a Retry button if the request fails. Failed actions (booking, review, save, delete) show the reason next to the button, including the messages from the database such as "This course is fully booked".
+Every page that loads data has three states: a loader while waiting, the content, and an error message with a "Try again" button if the request fails. Failed actions (booking, review, save, delete) show the reason next to the button, including the messages from the database such as "This course is fully booked".
 
 ### Empty or missing data states
 
@@ -262,5 +262,6 @@ Every page that loads data has three states: a loader while waiting, the content
 - My bookings with nothing in it: a short message and a link to the catalog
 - My courses with nothing in it: a short message and a link to Create course
 - A course with no reviews: "No reviews yet"
+- A course with no photo, or a photo that fails to load: a placeholder of the same size, on the card and on the details page
 - A course id that does not exist: a "Course not found" message with a link back to the catalog
 - An unknown URL: the Not found page

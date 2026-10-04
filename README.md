@@ -12,7 +12,7 @@ Built as the exam project for the SoftUni ReactJS course.
 
 **Guests**
 
-- Browse the catalog; search by title, filter by category, sort by date or price
+- Browse the catalog; search by title, filter by category and by upcoming or past courses, sort by date or price
 - Open a course to see its details, places left and reviews
 
 **Learners**

@@ -1,11 +1,21 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
+import CourseImage from '../components/courses/CourseImage'
 import ReviewList from '../components/reviews/ReviewList'
 import EmptyState from '../components/ui/EmptyState'
 import ErrorMessage from '../components/ui/ErrorMessage'
 import Spinner from '../components/ui/Spinner'
 import { getCourse } from '../services/courseService'
 import { getReviews } from '../services/reviewService'
+import {
+  formatCategory,
+  formatDateTime,
+  formatDuration,
+  formatPlacesLeft,
+  formatPrice,
+  formatRating,
+} from '../utils/formatters'
+import styles from './CourseDetails.module.css'
 
 export default function CourseDetails() {
   const { courseId } = useParams()
@@ -47,13 +57,58 @@ export default function CourseDetails() {
   }
 
   const { course, reviews } = state
+  const isFull = course.places_left <= 0
 
   return (
     <>
       <title>{`${course.title} | RescueReady`}</title>
-      <h1>{course.title}</h1>
-      <h2>Reviews</h2>
-      <ReviewList reviews={reviews} />
+      <Link to="/courses" className={styles.back}>
+        <span aria-hidden="true">←</span>
+        <span className={styles.backLabel}>All courses</span>
+      </Link>
+      <header className={styles.header}>
+        <span className={styles.category}>{formatCategory(course.category)}</span>
+        <h1 className={styles.title}>{course.title}</h1>
+        <p className={styles.byline}>
+          <span>Taught by {course.instructor_name}</span>
+          <span>{formatRating(course.average_rating, course.review_count)}</span>
+        </p>
+      </header>
+      <div className={styles.layout}>
+        <CourseImage key={course.image_url} src={course.image_url} className={styles.image} />
+        <aside className={styles.facts} aria-label="Booking information">
+          <p className={styles.price}>{formatPrice(course.price)}</p>
+          <p className={isFull ? styles.full : styles.places}>{formatPlacesLeft(course.places_left)}</p>
+          <dl className={styles.list}>
+            <div>
+              <dt>Starts</dt>
+              <dd>{formatDateTime(course.starts_at)}</dd>
+            </div>
+            <div>
+              <dt>Duration</dt>
+              <dd>{formatDuration(course.duration_hours)}</dd>
+            </div>
+            <div>
+              <dt>Venue</dt>
+              <dd>{course.location}</dd>
+            </div>
+            <div>
+              <dt>Group size</dt>
+              <dd>{course.capacity === 1 ? '1 person' : `Up to ${course.capacity} people`}</dd>
+            </div>
+          </dl>
+        </aside>
+        <div className={styles.main}>
+          <section>
+            <h2 className={styles.heading}>About this course</h2>
+            <p className={styles.description}>{course.description}</p>
+          </section>
+          <section>
+            <h2 className={styles.heading}>Reviews</h2>
+            <ReviewList reviews={reviews} />
+          </section>
+        </div>
+      </div>
     </>
   )
 }

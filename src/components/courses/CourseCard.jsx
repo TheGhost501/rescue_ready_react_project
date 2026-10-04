@@ -1,27 +1,14 @@
-import { useState } from 'react'
 import { Link } from 'react-router'
 import { formatCategory, formatDateTime, formatPlacesLeft, formatPrice, formatRating } from '../../utils/formatters'
+import CourseImage from './CourseImage'
 import styles from './CourseCard.module.css'
 
 export default function CourseCard({ course }) {
-  const [imageFailed, setImageFailed] = useState(false)
-
-  const hasImage = course.image_url && !imageFailed
   const isFull = course.places_left <= 0
 
   return (
     <article className={styles.card}>
-      {hasImage ? (
-        <img
-          src={course.image_url}
-          alt=""
-          loading="lazy"
-          className={styles.image}
-          onError={() => setImageFailed(true)}
-        />
-      ) : (
-        <div className={styles.image} aria-hidden="true" />
-      )}
+      <CourseImage src={course.image_url} loading="lazy" className={styles.image} />
       <div className={styles.body}>
         <span className={styles.category}>{formatCategory(course.category)}</span>
         <h2 className={styles.title}>

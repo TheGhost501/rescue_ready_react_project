@@ -16,10 +16,7 @@
 }
 
 .image {
-  width: 100%;
   aspect-ratio: 16 / 10;
-  object-fit: cover;
-  background: var(--color-accent);
 }
 
 .body {
