@@ -103,15 +103,16 @@ Seven of these pages are dynamic (they render data loaded from the API): Home, C
 
 ### Catalog / List Page
 
-**Data displayed:** a grid of course cards. Each card shows the image, title, category, venue, start date, price, places left and average rating.
+**Data displayed:** a grid of course cards. Each card shows the image, title, category, venue, start date, price, places left and average rating. A course whose start time has passed shows "Already started" in place of the places left.
 
 **Interaction:**
 
 - **Search** by title (text input, applied after a short pause in typing)
 - **Filter** by category
+- **Filter** by date: Upcoming (the default), Past or All. A course counts as past from its start time, which is also the moment it can no longer be booked.
 - **Sort** by start date or price
 
-Search, filter and sort are sent to the API as query parameters, so the database does the work and not the browser.
+Search, filters and sort are sent to the API as query parameters, so the database does the work and not the browser.
 
 ### Details Page
 
@@ -142,7 +143,7 @@ An instructor opens `/courses/create` and fills in the course form. After valida
 ### Read (GET)
 
 - **Home:** the next upcoming courses
-- **Catalog:** all courses, with search, filter and sort
+- **Catalog:** upcoming courses by default, or past or all courses, with search, category filter and sort
 - **Course details:** one course by id, with its reviews
 - **My courses:** courses where the current instructor is the author
 - **My bookings:** the current user's bookings with their courses
@@ -221,7 +222,7 @@ The same limits are repeated as constraints in the database, so invalid data is 
 **Mount / update / unmount example (Catalog page):**
 
 - **Mount:** the effect runs and loads the courses.
-- **Update:** the effect depends on the search text, category and sort order, so it runs again when any of them changes and loads a new list.
+- **Update:** the effect depends on the search text, category, date filter and sort order, so it runs again when any of them changes and loads a new list.
 - **Unmount:** the cleanup function cancels the pending search timer and marks the request as stale, so a response that arrives after the user has left the page is ignored.
 
 A second example is `AuthProvider`, which subscribes to `onAuthStateChange` on mount and unsubscribes in the cleanup function.
