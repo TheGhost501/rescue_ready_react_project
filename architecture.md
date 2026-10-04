@@ -158,7 +158,7 @@ Guard behaviour:
 | Page | Built from | Data it loads |
 |---|---|---|
 | Home | CourseCard | Next upcoming courses |
-| Catalog | CourseFilters, CourseCard, Spinner, ErrorMessage, EmptyState | Courses, filtered and sorted by the API |
+| Catalog | CourseFilters, CourseCard, Spinner, ErrorMessage, EmptyState | Courses, filtered (title, category, upcoming or past) and sorted by the API |
 | Course details | BookingButton, ReviewList, ReviewForm, ConfirmDialog | One course, its reviews, the user's booking |
 | Create course | CourseForm | – |
 | Edit course | CourseForm | One course |
@@ -177,7 +177,7 @@ Guard behaviour:
 | Session tokens | `localStorage`, managed by the Supabase client | Survives a page refresh |
 | Lists and records (courses, reviews, bookings) | Local state of the page that shows them | Not shared between pages; reloaded when the page opens |
 | Form values, errors, submitting flag | `useForm` inside each form | Local to the form |
-| Catalog search, category, sort | Local state of the Catalog page | Drives the request |
+| Catalog search, category, date filter (upcoming, past or all), sort | Local state of the Catalog page | Drives the request |
 | Booking button result before the server answers | `useOptimistic` in `BookingButton` | Instant feedback, rolled back if the request fails |
 
 There is no global data store. The only shared state is authentication.
@@ -185,7 +185,7 @@ There is no global data store. The only shared state is authentication.
 ### Component lifecycle in use
 
 - **Mount:** `AuthProvider` restores the session and subscribes to auth changes. Each page loads its data.
-- **Update:** the Catalog effect depends on the search text, category and sort order, and runs again when any of them changes. `AuthProvider` loads the profile again when the user changes.
+- **Update:** the Catalog effect depends on the search text, category, date filter and sort order, and runs again when any of them changes. `AuthProvider` loads the profile again when the user changes.
 - **Unmount:** `AuthProvider` unsubscribes from auth changes. Data-loading effects mark their request as stale, so a late response is ignored. The search debounce clears its timer.
 
 ## 8. Data model
@@ -240,6 +240,7 @@ erDiagram
 - `profiles.role` is `learner` or `instructor`. It is set at registration and cannot be changed by the user.
 - A user can have one booking and one review per course.
 - The `course_catalog` view returns each course with the instructor's name, the number of places booked, the places left, the number of reviews and the average rating. Catalog, details, home and "my courses" read from this view.
+- A course is never removed when its start time passes. It stays in the database with its bookings and reviews, can no longer be booked, and moves from the catalog's Upcoming list to its Past list.
 
 ### Who can do what (Row Level Security)
 
