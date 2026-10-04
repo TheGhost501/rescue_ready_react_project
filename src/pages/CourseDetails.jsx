@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
+import ReviewList from '../components/reviews/ReviewList'
 import EmptyState from '../components/ui/EmptyState'
 import ErrorMessage from '../components/ui/ErrorMessage'
 import Spinner from '../components/ui/Spinner'
@@ -51,7 +52,8 @@ export default function CourseDetails() {
     <>
       <title>{`${course.title} | RescueReady`}</title>
       <h1>{course.title}</h1>
-      <p>Reviews: {reviews.length}</p>
+      <h2>Reviews</h2>
+      <ReviewList reviews={reviews} />
     </>
   )
 }
