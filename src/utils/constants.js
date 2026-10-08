@@ -10,3 +10,9 @@ export const CATEGORIES = [
   { value: 'fire-safety', label: 'Fire safety' },
   { value: 'health-safety', label: 'Health & safety' },
 ]
+
+// The values must match the role check in supabase/schema.sql.
+export const ROLES = [
+  { value: 'learner', label: 'Learner', hint: 'Book courses and review them.' },
+  { value: 'instructor', label: 'Instructor', hint: 'Everything a learner can do, plus publishing courses.' },
+]
