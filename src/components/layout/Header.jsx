@@ -17,9 +17,11 @@ export default function Header() {
   async function handleLogout() {
     setLogoutState({ isPending: true, error: '' })
     try {
+      // Leave the page first. Logging out while still on a private page would make its guard
+      // redirect to the login page instead.
+      navigate('/')
       await logout()
       setLogoutState({ isPending: false, error: '' })
-      navigate('/')
     } catch (error) {
       setLogoutState({ isPending: false, error: error.message })
     }
