@@ -71,7 +71,7 @@ flowchart LR
     │   └── InstructorRoute.jsx instructors only
     ├── components/
     │   ├── layout/             Layout, Header, Footer
-    │   ├── ui/                 Button, Field, Spinner, ErrorMessage, EmptyState, ConfirmDialog
+    │   ├── ui/                 Button, Field, RadioGroup, FormCard, Spinner, ErrorMessage, EmptyState, ConfirmDialog
     │   ├── courses/            CourseCard, CourseImage, CourseForm, CourseFilters, BookingButton
     │   └── reviews/            ReviewList, ReviewForm
     ├── pages/                  one component per route
@@ -164,10 +164,10 @@ Guard behaviour:
 | Edit course | CourseForm | One course |
 | My courses | CourseCard, EmptyState | Courses the instructor teaches |
 | My bookings | EmptyState | The user's bookings with their courses |
-| Login, Register | Field, Button | – |
+| Login, Register | FormCard, Field, RadioGroup (Register only), Button, ErrorMessage | – |
 | Not found | – | – |
 
-`CourseForm` is shared by Create and Edit. `Button` and `Field` are the only button and form-field components, so every form looks and behaves the same.
+`CourseForm` is shared by Create and Edit. `Button`, `Field` and `RadioGroup` (a set of radio buttons with one legend and one error) are the only button and form-field components, so every form looks and behaves the same. `FormCard` is the centred card around the Login and Register forms.
 
 ## 7. State
 
