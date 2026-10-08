@@ -3,12 +3,13 @@ import Button from '../components/ui/Button'
 import ErrorMessage from '../components/ui/ErrorMessage'
 import Field from '../components/ui/Field'
 import FormCard from '../components/ui/FormCard'
+import { useAuth } from '../hooks/useAuth'
 import { useForm } from '../hooks/useForm'
-import { login } from '../services/authService'
 import { validateLogin } from '../utils/validators'
 
 export default function Login() {
   const location = useLocation()
+  const { login } = useAuth()
   const form = useForm({
     initialValues: { email: '', password: '' },
     validate: validateLogin,

@@ -4,8 +4,8 @@ import ErrorMessage from '../components/ui/ErrorMessage'
 import Field from '../components/ui/Field'
 import FormCard from '../components/ui/FormCard'
 import RadioGroup from '../components/ui/RadioGroup'
+import { useAuth } from '../hooks/useAuth'
 import { useForm } from '../hooks/useForm'
-import { register } from '../services/authService'
 import { ROLES } from '../utils/constants'
 import { validateRegister } from '../utils/validators'
 
@@ -13,6 +13,7 @@ const initialValues = { fullName: '', role: 'learner', email: '', password: '', 
 
 export default function Register() {
   const location = useLocation()
+  const { register } = useAuth()
   const form = useForm({ initialValues, validate: validateRegister, onSubmit: register })
 
   return (
