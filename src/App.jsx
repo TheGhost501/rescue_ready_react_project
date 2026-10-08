@@ -1,5 +1,8 @@
 import { Route, Routes } from 'react-router'
 import Layout from './components/layout/Layout'
+import GuestRoute from './guards/GuestRoute'
+import InstructorRoute from './guards/InstructorRoute'
+import PrivateRoute from './guards/PrivateRoute'
 import Catalog from './pages/Catalog'
 import CourseCreate from './pages/CourseCreate'
 import CourseDetails from './pages/CourseDetails'
@@ -17,13 +20,23 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="courses" element={<Catalog />} />
-        <Route path="courses/create" element={<CourseCreate />} />
         <Route path="courses/:courseId" element={<CourseDetails />} />
-        <Route path="courses/:courseId/edit" element={<CourseEdit />} />
-        <Route path="my-courses" element={<MyCourses />} />
-        <Route path="my-bookings" element={<MyBookings />} />
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
+
+        <Route element={<GuestRoute />}>
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+        </Route>
+
+        <Route element={<PrivateRoute />}>
+          <Route path="my-bookings" element={<MyBookings />} />
+
+          <Route element={<InstructorRoute />}>
+            <Route path="courses/create" element={<CourseCreate />} />
+            <Route path="courses/:courseId/edit" element={<CourseEdit />} />
+            <Route path="my-courses" element={<MyCourses />} />
+          </Route>
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
