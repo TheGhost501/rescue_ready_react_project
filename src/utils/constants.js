@@ -11,6 +11,9 @@ export const CATEGORIES = [
   { value: 'health-safety', label: 'Health & safety' },
 ]
 
+// Must match the price check in supabase/schema.sql.
+export const MAX_PRICE = 9999.99
+
 // The values must match the role check in supabase/schema.sql.
 export const ROLES = [
   { value: 'learner', label: 'Learner', hint: 'Book courses and review them.' },
