@@ -315,7 +315,8 @@ sequenceDiagram
 
 - **Services** convert every Supabase error into an `Error` with a readable message. Messages raised by the database (section 8) pass through unchanged. Network failures and duplicate records get their own wording.
 - **Pages that load data** have four states: loading, error with a "Try again" button, empty, and content.
-- **Forms** validate on blur and on submit, show field errors under the field, show server errors above the form, and keep what the user typed.
+- **Forms** validate on blur and on submit, show field errors under the field, and keep what the user typed. A server error is shown above the Login and Register forms, and next to the button on the course form, which is too long for a message at the top to be seen.
+- **Failed actions** (booking, review, save, delete) show the reason next to the button that was pressed. For delete that is inside the confirmation dialog.
 - **Missing records:** an unknown course id shows "Course not found" with a link to the catalog. An unknown URL shows the Not found page.
 - **Reads are retried** by the Supabase client on network failure (about seven seconds in total) before an error is reported. Writes are not retried.
 

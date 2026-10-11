@@ -65,7 +65,7 @@ create table public.courses (
   location text not null check (char_length(location) between 3 and 100),
   starts_at timestamptz not null,
   duration_hours integer not null check (duration_hours between 1 and 40),
-  price numeric(7, 2) not null check (price >= 0),
+  price numeric(7, 2) not null check (price between 0 and 9999.99),
   capacity integer not null check (capacity between 1 and 30),
   image_url text check (image_url is null or image_url ~* '^https?://'),
   created_at timestamptz not null default now(),

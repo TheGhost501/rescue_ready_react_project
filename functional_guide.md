@@ -188,7 +188,7 @@ All forms use controlled inputs. Errors are shown under the field once the user 
 | Venue | Required, 3 to 100 characters |
 | Start date | Required, must be in the future |
 | Duration | Required, whole number of hours, 1 to 40 |
-| Price | Required, number, 0 or more, at most two decimal places |
+| Price | Required, number from 0 to 9,999.99, at most two decimal places |
 | Capacity | Required, whole number, 1 to 30, and on edit not lower than the places already booked |
 | Image URL | Optional, must start with `http://` or `https://` |
 | Full name | Required, 2 to 50 characters |
