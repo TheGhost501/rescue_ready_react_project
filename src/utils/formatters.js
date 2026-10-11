@@ -47,3 +47,25 @@ export function formatRating(averageRating, reviewCount) {
   if (!reviewCount) return 'No reviews yet'
   return `${Number(averageRating).toFixed(1)} (${reviewCount} ${reviewCount === 1 ? 'review' : 'reviews'})`
 }
+
+// Database value (UTC) -> value for <input type="datetime-local">, which is local time with no zone.
+export function toDateTimeLocal(isoString) {
+  const date = new Date(isoString)
+  const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+  return shifted.toISOString().slice(0, 16)
+}
+
+// Form values (all strings) -> the row the database expects.
+export function toCoursePayload(values) {
+  return {
+    title: values.title.trim(),
+    category: values.category,
+    description: values.description.trim(),
+    location: values.location.trim(),
+    starts_at: new Date(values.startsAt).toISOString(),
+    duration_hours: Number(values.durationHours),
+    price: Number(values.price),
+    capacity: Number(values.capacity),
+    image_url: values.imageUrl.trim() || null, // the database accepts null or a URL, not ''
+  }
+}
