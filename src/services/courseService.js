@@ -27,3 +27,28 @@ export async function getCourse(courseId) {
   if (error) throw new Error(toMessage(error))
   return data // null when there is no such course
 }
+
+// owner_id is not sent: the database fills it in from the logged-in user.
+export async function createCourse(values) {
+  const { data, error } = await supabase.from('courses').insert(values).select().single()
+
+  if (error) throw new Error(toMessage(error))
+  return data
+}
+
+// Row Level Security hides other people's courses, so a blocked update or delete changes zero rows
+// and reports no error. select() returns the rows that were changed, which is how we tell.
+export async function updateCourse(courseId, values) {
+  const { data, error } = await supabase.from('courses').update(values).eq('id', courseId).select()
+
+  if (error) throw new Error(toMessage(error))
+  if (data.length === 0) throw new Error('Course not found, or you are not its author.')
+  return data[0]
+}
+
+export async function deleteCourse(courseId) {
+  const { data, error } = await supabase.from('courses').delete().eq('id', courseId).select('id')
+
+  if (error) throw new Error(toMessage(error))
+  if (data.length === 0) throw new Error('Course not found, or you are not its author.')
+}
