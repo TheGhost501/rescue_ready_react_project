@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import BookingButton from '../components/courses/BookingButton'
 import CourseImage from '../components/courses/CourseImage'
 import ReviewList from '../components/reviews/ReviewList'
 import Button from '../components/ui/Button'
@@ -8,6 +9,7 @@ import EmptyState from '../components/ui/EmptyState'
 import ErrorMessage from '../components/ui/ErrorMessage'
 import Spinner from '../components/ui/Spinner'
 import { useAuth } from '../hooks/useAuth'
+import { getMyBooking } from '../services/bookingService'
 import { deleteCourse, getCourse } from '../services/courseService'
 import { getReviews } from '../services/reviewService'
 import {
@@ -24,32 +26,51 @@ const deleteClosed = { isOpen: false, isPending: false, error: '' }
 
 export default function CourseDetails() {
   const { courseId } = useParams()
-  const { user } = useAuth()
+  const { user, isLoading: isAuthLoading } = useAuth()
   const navigate = useNavigate()
-  const [state, setState] = useState({ status: 'loading', course: null, reviews: [], error: '' })
+  const location = useLocation()
+  // booking is the current user's booking on this course ({ id }), or null when there is none.
+  const [state, setState] = useState({ status: 'loading', course: null, reviews: [], booking: null, error: '' })
   const [attempt, setAttempt] = useState(0)
   const [deletion, setDeletion] = useState(deleteClosed)
+  // The time is read once, when the page opens. Reading the clock on every render would make the
+  // render impure: the same props and state could give a different result.
+  const [openedAt] = useState(() => new Date())
+
+  // The id, not the user object: Supabase hands out a new object every time it refreshes the token.
+  const userId = user?.id ?? null
 
   useEffect(() => {
+    // Wait until we know who is looking. Loading as a guest first would show a user who has
+    // already booked that they have not.
+    if (isAuthLoading) return
     let ignore = false
 
-    Promise.all([getCourse(courseId), getReviews(courseId)])
-      .then(([course, reviews]) => {
+    Promise.all([getCourse(courseId), getReviews(courseId), userId ? getMyBooking(courseId) : null])
+      .then(([course, reviews, booking]) => {
         if (ignore) return
-        setState({ status: course ? 'success' : 'notFound', course, reviews, error: '' })
+        setState({ status: course ? 'success' : 'notFound', course, reviews, booking, error: '' })
       })
       .catch((error) => {
-        if (!ignore) setState({ status: 'error', course: null, reviews: [], error: error.message })
+        if (!ignore) setState({ status: 'error', course: null, reviews: [], booking: null, error: error.message })
       })
 
     return () => {
       ignore = true
     }
-  }, [courseId, attempt])
+  }, [courseId, userId, isAuthLoading, attempt])
 
   function retry() {
-    setState({ status: 'loading', course: null, reviews: [], error: '' })
+    setState({ status: 'loading', course: null, reviews: [], booking: null, error: '' })
     setAttempt((current) => current + 1)
+  }
+
+  // Called after a booking or a cancellation. It returns a promise, so the caller can wait for the
+  // real numbers. It leaves status alone: 'loading' would swap the page for the spinner and unmount
+  // the button that is waiting. An error is not caught here; the caller shows it.
+  async function reload() {
+    const [course, booking] = await Promise.all([getCourse(courseId), userId ? getMyBooking(courseId) : null])
+    setState((current) => ({ ...current, status: course ? 'success' : 'notFound', course, booking }))
   }
 
   async function handleDelete() {
@@ -75,10 +96,40 @@ export default function CourseDetails() {
     )
   }
 
-  const { course, reviews } = state
+  const { course, reviews, booking } = state
   const isFull = course.places_left <= 0
   // Only the author sees Edit and Delete. The database refuses both for everyone else as well.
   const isOwner = user?.id === course.owner_id
+  // The same moment the database stops taking bookings.
+  const hasStarted = new Date(course.starts_at) <= openedAt
+  const placesLine = <p className={isFull ? styles.full : styles.places}>{formatPlacesLeft(course.places_left)}</p>
+
+  // What sits under the price depends on who is looking.
+  let bookingArea
+  if (hasStarted) {
+    bookingArea = (
+      <>
+        <p className={styles.places}>This course has already started.</p>
+        {booking && <p className={styles.booked}>You booked a place on this course.</p>}
+      </>
+    )
+  } else if (isOwner) {
+    bookingArea = placesLine
+  } else if (!user) {
+    bookingArea = (
+      <>
+        {placesLine}
+        {/* state carries this page, so the guest comes back here after logging in. */}
+        <Link to="/login" state={{ from: location }} className={styles.login}>
+          Log in to book
+        </Link>
+      </>
+    )
+  } else {
+    bookingArea = (
+      <BookingButton courseId={course.id} booking={booking} placesLeft={course.places_left} onChanged={reload} />
+    )
+  }
 
   return (
     <>
@@ -99,7 +150,7 @@ export default function CourseDetails() {
         <CourseImage key={course.image_url} src={course.image_url} className={styles.image} />
         <aside className={styles.facts} aria-label="Booking information">
           <p className={styles.price}>{formatPrice(course.price)}</p>
-          <p className={isFull ? styles.full : styles.places}>{formatPlacesLeft(course.places_left)}</p>
+          {bookingArea}
           <dl className={styles.list}>
             <div>
               <dt>Starts</dt>
