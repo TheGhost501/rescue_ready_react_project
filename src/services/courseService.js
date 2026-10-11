@@ -28,6 +28,18 @@ export async function getCourse(courseId) {
   return data // null when there is no such course
 }
 
+// The courses one instructor teaches, past ones included.
+export async function getMyCourses(ownerId) {
+  const { data, error } = await supabase
+    .from('course_catalog')
+    .select('*')
+    .eq('owner_id', ownerId)
+    .order('starts_at', { ascending: true })
+
+  if (error) throw new Error(toMessage(error))
+  return data
+}
+
 // owner_id is not sent: the database fills it in from the logged-in user.
 export async function createCourse(values) {
   const { data, error } = await supabase.from('courses').insert(values).select().single()

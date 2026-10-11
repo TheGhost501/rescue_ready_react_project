@@ -42,6 +42,11 @@ export function formatPlacesLeft(placesLeft) {
   return placesLeft === 1 ? '1 place left' : `${placesLeft} places left`
 }
 
+// (3, 12) -> '3 of 12 booked'
+export function formatBookedCount(bookedCount, capacity) {
+  return `${bookedCount} of ${capacity} booked`
+}
+
 // (4.5, 3) -> '4.5 (3 reviews)'. The average is null when there are no reviews.
 export function formatRating(averageRating, reviewCount) {
   if (!reviewCount) return 'No reviews yet'

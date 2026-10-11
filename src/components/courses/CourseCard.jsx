@@ -1,9 +1,17 @@
 import { Link } from 'react-router'
-import { formatCategory, formatDateTime, formatPlacesLeft, formatPrice, formatRating } from '../../utils/formatters'
+import {
+  formatBookedCount,
+  formatCategory,
+  formatDateTime,
+  formatPlacesLeft,
+  formatPrice,
+  formatRating,
+} from '../../utils/formatters'
 import CourseImage from './CourseImage'
 import styles from './CourseCard.module.css'
 
-export default function CourseCard({ course }) {
+// showBookedCount: for the instructor's own list, show '3 of 12 booked' in place of the places left.
+export default function CourseCard({ course, showBookedCount = false }) {
   const isFull = course.places_left <= 0
 
   return (
@@ -23,7 +31,11 @@ export default function CourseCard({ course }) {
         </ul>
         <div className={styles.footer}>
           <span className={styles.price}>{formatPrice(course.price)}</span>
-          <span className={isFull ? styles.full : styles.places}>{formatPlacesLeft(course.places_left)}</span>
+          {showBookedCount ? (
+            <span className={styles.places}>{formatBookedCount(course.booked_count, course.capacity)}</span>
+          ) : (
+            <span className={isFull ? styles.full : styles.places}>{formatPlacesLeft(course.places_left)}</span>
+          )}
         </div>
       </div>
     </article>
