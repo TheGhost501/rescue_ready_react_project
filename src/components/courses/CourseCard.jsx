@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from 'react-router'
 import {
   formatAvailability,
@@ -12,7 +13,7 @@ import CourseImage from './CourseImage'
 import styles from './CourseCard.module.css'
 
 // showBookedCount: for the instructor's own list, show '3 of 12 booked' in place of the places left.
-export default function CourseCard({ course, showBookedCount = false }) {
+function CourseCard({ course, showBookedCount = false }) {
   // Red only for a course that is full and can still be booked; a started course is neutral.
   const isFull = course.places_left <= 0 && !isStarted(course.starts_at)
 
@@ -48,3 +49,7 @@ export default function CourseCard({ course, showBookedCount = false }) {
     </article>
   )
 }
+
+// Typing in the catalog search re-renders the page on every key. The cards get the same course
+// objects each time, so memo skips them until the list itself changes.
+export default memo(CourseCard)
