@@ -13,7 +13,11 @@
   font-size: var(--text-lg);
 }
 
+/* A link on its own line, so it gets the same 44px touch target as a button. */
 .link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-height);
   color: var(--color-primary);
   font-weight: 600;
 }
