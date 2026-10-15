@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import BookingButton from '../components/courses/BookingButton'
 import CourseImage from '../components/courses/CourseImage'
+import ReviewForm from '../components/reviews/ReviewForm'
 import ReviewList from '../components/reviews/ReviewList'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
@@ -11,7 +12,7 @@ import Spinner from '../components/ui/Spinner'
 import { useAuth } from '../hooks/useAuth'
 import { getMyBooking } from '../services/bookingService'
 import { deleteCourse, getCourse } from '../services/courseService'
-import { getReviews } from '../services/reviewService'
+import { createReview, deleteReview, getInstructorReviews, updateReview } from '../services/reviewService'
 import {
   formatCategory,
   formatDateTime,
@@ -23,6 +24,20 @@ import {
 import styles from './CourseDetails.module.css'
 
 const deleteClosed = { isOpen: false, isPending: false, error: '' }
+const emptyReview = { rating: '', comment: '' }
+
+// The reviews are the instructor's, from all their courses, so they need the course's owner id
+// and are loaded once the course is in. The booking does not, so it loads alongside the course.
+async function loadDetails(courseId, userId) {
+  const [course, booking] = await Promise.all([getCourse(courseId), userId ? getMyBooking(courseId) : null])
+  const reviews = course ? await getInstructorReviews(course.owner_id) : []
+  return { course, reviews, booking }
+}
+
+// Form values (strings) -> the columns the database expects.
+function toReviewPayload(values) {
+  return { rating: Number(values.rating), comment: values.comment.trim() }
+}
 
 export default function CourseDetails() {
   const { courseId } = useParams()
@@ -33,6 +48,9 @@ export default function CourseDetails() {
   const [state, setState] = useState({ status: 'loading', course: null, reviews: [], booking: null, error: '' })
   const [attempt, setAttempt] = useState(0)
   const [deletion, setDeletion] = useState(deleteClosed)
+  const [reviewDeletion, setReviewDeletion] = useState(deleteClosed)
+  // true while the user's own review is swapped for the edit form
+  const [isEditingReview, setIsEditingReview] = useState(false)
   // The time is read once, when the page opens. Reading the clock on every render would make the
   // render impure: the same props and state could give a different result.
   const [openedAt] = useState(() => new Date())
@@ -46,8 +64,8 @@ export default function CourseDetails() {
     if (isAuthLoading) return
     let ignore = false
 
-    Promise.all([getCourse(courseId), getReviews(courseId), userId ? getMyBooking(courseId) : null])
-      .then(([course, reviews, booking]) => {
+    loadDetails(courseId, userId)
+      .then(({ course, reviews, booking }) => {
         if (ignore) return
         setState({ status: course ? 'success' : 'notFound', course, reviews, booking, error: '' })
       })
@@ -65,12 +83,46 @@ export default function CourseDetails() {
     setAttempt((current) => current + 1)
   }
 
-  // Called after a booking or a cancellation. It returns a promise, so the caller can wait for the
-  // real numbers. It leaves status alone: 'loading' would swap the page for the spinner and unmount
-  // the button that is waiting. An error is not caught here; the caller shows it.
+  // Called after a booking, a cancellation or a review change. It returns a promise, so the caller
+  // can wait for the real numbers. It leaves status alone: 'loading' would swap the page for the
+  // spinner and unmount the button that is waiting. An error is not caught here; the caller shows it.
   async function reload() {
-    const [course, booking] = await Promise.all([getCourse(courseId), userId ? getMyBooking(courseId) : null])
-    setState((current) => ({ ...current, status: course ? 'success' : 'notFound', course, booking }))
+    const { course, reviews, booking } = await loadDetails(courseId, userId)
+    setState((current) => ({ ...current, status: course ? 'success' : 'notFound', course, reviews, booking }))
+  }
+
+  // After a review is saved or deleted. The change is already in the database, so a failed reload
+  // must not look like a failed save (sending it again would be refused as a duplicate). The page
+  // shows its error state with "Try again" instead.
+  async function refreshAfterReview() {
+    try {
+      await reload()
+    } catch (error) {
+      setState({ status: 'error', course: null, reviews: [], booking: null, error: error.message })
+    }
+  }
+
+  async function handleCreateReview(values) {
+    await createReview({ course_id: courseId, ...toReviewPayload(values) })
+    await refreshAfterReview()
+  }
+
+  async function handleUpdateReview(reviewId, values) {
+    await updateReview(reviewId, toReviewPayload(values))
+    await refreshAfterReview()
+    setIsEditingReview(false)
+  }
+
+  async function handleDeleteReview(reviewId) {
+    setReviewDeletion({ isOpen: true, isPending: true, error: '' })
+    try {
+      await deleteReview(reviewId)
+    } catch (error) {
+      setReviewDeletion({ isOpen: true, isPending: false, error: error.message })
+      return
+    }
+    setReviewDeletion(deleteClosed)
+    await refreshAfterReview()
   }
 
   async function handleDelete() {
@@ -131,6 +183,47 @@ export default function CourseDetails() {
     )
   }
 
+  // The user's review of this course. Their reviews of the instructor's other courses are in the
+  // list too, but they are changed from those courses' pages.
+  const ownReview = user ? reviews.find((review) => review.user_id === user.id && review.course_id === course.id) : null
+
+  // What sits above the reviews depends on who is looking. Only someone who booked the course can
+  // review it, once it has started; the database refuses anyone else. A guest and the author see
+  // nothing here. A user who has reviewed sees their review in the list with Edit and Delete, and
+  // the form here only while editing.
+  let reviewArea = null
+  if (ownReview && isEditingReview) {
+    reviewArea = (
+      <div className={styles.reviewBox}>
+        <h3 className={styles.reviewHeading}>Edit your review</h3>
+        <ReviewForm
+          key={`edit-${ownReview.id}`}
+          initialValues={{ rating: String(ownReview.rating), comment: ownReview.comment }}
+          submitLabel="Save review"
+          onSubmit={(values) => handleUpdateReview(ownReview.id, values)}
+          onCancel={() => setIsEditingReview(false)}
+        />
+      </div>
+    )
+  } else if (ownReview || !user || isOwner) {
+    reviewArea = null
+  } else if (booking && hasStarted) {
+    reviewArea = (
+      <div className={styles.reviewBox}>
+        <h3 className={styles.reviewHeading}>Review this course</h3>
+        <p className={styles.reviewHint}>Your rating counts toward {course.instructor_name}’s overall rating.</p>
+        <ReviewForm key="add" initialValues={emptyReview} submitLabel="Post review" onSubmit={handleCreateReview} />
+      </div>
+    )
+  } else if (booking) {
+    reviewArea = <p className={styles.reviewNote}>You can review this course once it has started.</p>
+  } else {
+    reviewArea = <p className={styles.reviewNote}>Only people who booked this course can review it.</p>
+  }
+
+  // While editing, the form takes the place of the review in the list.
+  const listedReviews = isEditingReview && ownReview ? reviews.filter((review) => review.id !== ownReview.id) : reviews
+
   return (
     <>
       <title>{`${course.title} | RescueReady`}</title>
@@ -143,7 +236,7 @@ export default function CourseDetails() {
         <h1 className={styles.title}>{course.title}</h1>
         <p className={styles.byline}>
           <span>Taught by {course.instructor_name}</span>
-          <span>{formatRating(course.average_rating, course.review_count)}</span>
+          <span>Instructor rating {formatRating(course.instructor_average_rating, course.instructor_review_count)}</span>
         </p>
       </header>
       <div className={styles.layout}>
@@ -185,9 +278,19 @@ export default function CourseDetails() {
             <h2 className={styles.heading}>About this course</h2>
             <p className={styles.description}>{course.description}</p>
           </section>
-          <section>
-            <h2 className={styles.heading}>Reviews</h2>
-            <ReviewList reviews={reviews} />
+          <section className={styles.reviews}>
+            <h2 className={styles.heading}>Reviews of {course.instructor_name}</h2>
+            {reviewArea}
+            {/* While the only review is being edited there is nothing else to list, and "No reviews"
+                would be wrong. */}
+            {!(isEditingReview && listedReviews.length === 0) && (
+              <ReviewList
+                reviews={listedReviews}
+                ownReviewId={ownReview?.id ?? null}
+                onEdit={() => setIsEditingReview(true)}
+                onDelete={() => setReviewDeletion({ ...deleteClosed, isOpen: true })}
+              />
+            )}
           </section>
         </div>
       </div>
@@ -205,6 +308,20 @@ export default function CourseDetails() {
           <p>
             “{course.title}” will be removed for good, together with its bookings and reviews.
           </p>
+        </ConfirmDialog>
+      )}
+      {ownReview && (
+        <ConfirmDialog
+          isOpen={reviewDeletion.isOpen}
+          title="Delete your review?"
+          confirmLabel="Delete review"
+          pendingLabel="Deleting…"
+          isPending={reviewDeletion.isPending}
+          error={reviewDeletion.error}
+          onConfirm={() => handleDeleteReview(ownReview.id)}
+          onCancel={() => setReviewDeletion(deleteClosed)}
+        >
+          <p>Your review of “{course.title}” will be removed for good.</p>
         </ConfirmDialog>
       )}
     </>

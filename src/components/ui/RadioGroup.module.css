@@ -27,6 +27,15 @@
   margin-top: var(--space-1);
 }
 
+.inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.inline .option {
+  flex: 1 1 5.5rem;
+}
+
 .option {
   display: flex;
   align-items: flex-start;

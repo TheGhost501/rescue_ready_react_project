@@ -27,7 +27,10 @@ export default function CourseCard({ course, showBookedCount = false }) {
         <ul className={styles.meta}>
           <li>{formatDateTime(course.starts_at)}</li>
           <li>{course.location}</li>
-          <li>{formatRating(course.average_rating, course.review_count)}</li>
+          {/* The rating is the instructor's, across all their courses. */}
+          <li>
+            {course.instructor_name} · {formatRating(course.instructor_average_rating, course.instructor_review_count)}
+          </li>
         </ul>
         <div className={styles.footer}>
           <span className={styles.price}>{formatPrice(course.price)}</span>

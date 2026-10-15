@@ -2,7 +2,8 @@ import { useId } from 'react'
 import styles from './RadioGroup.module.css'
 
 // options: [{ value, label, hint }]
-export default function RadioGroup({ legend, hint, error, options, name, value, onChange, onBlur }) {
+// inline: the options sit side by side and wrap, for a short scale such as a 1 to 5 rating.
+export default function RadioGroup({ legend, hint, error, options, name, value, onChange, onBlur, inline = false }) {
   const id = useId()
   const hintId = `${id}-hint`
   const errorId = `${id}-error`
@@ -16,7 +17,7 @@ export default function RadioGroup({ legend, hint, error, options, name, value, 
           {hint}
         </p>
       )}
-      <div className={styles.options}>
+      <div className={`${styles.options} ${inline ? styles.inline : ''}`}>
         {options.map((option) => (
           <label key={option.value} className={styles.option}>
             <input

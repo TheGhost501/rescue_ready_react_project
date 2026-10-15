@@ -88,3 +88,17 @@ export function validateCourse(values, bookedCount = 0) {
 
   return errors
 }
+
+// The rating comes from radio buttons, so it is a string: '' until one is chosen.
+export function validateReview(values) {
+  const errors = {}
+
+  const rating = Number(values.rating)
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) errors.rating = 'Choose a rating from 1 to 5.'
+
+  const comment = values.comment.trim()
+  if (!comment) errors.comment = 'Write a comment.'
+  else if (comment.length < 10 || comment.length > 500) errors.comment = 'Use 10 to 500 characters.'
+
+  return errors
+}

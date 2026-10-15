@@ -10,7 +10,7 @@
 
 **Main Purpose:**
 
-RescueReady is a booking platform for in-person safety training: first aid, paediatric first aid, lifeguarding, water safety, fire safety and general health & safety. Instructors publish courses with a date, venue, price and a limited number of places. Learners browse the catalog, see how many places are left, book a place and leave a review. It replaces the usual mix of emails and spreadsheets that small training providers use to fill their courses.
+RescueReady is a booking platform for in-person safety training: first aid, paediatric first aid, lifeguarding, water safety, fire safety and general health & safety. Instructors publish courses with a date, venue, price and a limited number of places. Learners browse the catalog, see how many places are left and book a place. Once the course has started, the people who booked it can review it, and every review counts toward the instructor's overall rating, so even a course that has not run yet shows how its instructor's past courses went. It replaces the usual mix of emails and spreadsheets that small training providers use to fill their courses.
 
 ## 2. User Access & Permissions
 
@@ -27,13 +27,13 @@ RescueReady is a booking platform for in-person safety training: first aid, paed
 | `/register` | Register |
 | `*` | Not found |
 
-**Public data shown:** every course (title, category, description, venue, date, duration, price, instructor name, places left) and every review (rating, comment, author name). A guest cannot book, review, or create a course; the details page shows a "Log in to book" link in place of those actions.
+**Public data shown:** every course (title, category, description, venue, date, duration, price, instructor name and rating, places left) and every review (rating, comment, author name, and the course it was for). A guest cannot book, review, or create a course; the details page shows a "Log in to book" link in place of those actions.
 
 ### Authenticated User
 
 There are two account types, chosen at registration and fixed afterwards:
 
-- **Learner:** can book courses and review them.
+- **Learner:** can book courses, and review the ones they booked once they have started.
 - **Instructor:** can do everything a learner can, and can also publish courses.
 
 **Main sections / pages:** everything a guest sees except Login and Register, plus:
@@ -47,7 +47,8 @@ There are two account types, chosen at registration and fixed afterwards:
 
 **Details pages:** the course details page adds actions that depend on who is looking:
 
-- A learner, or an instructor looking at someone else's course, can book a place, cancel their booking, and write, edit or delete their own review.
+- A learner, or an instructor looking at someone else's course, can book a place and cancel their booking. If they booked it and it has started, they can write one review of it, and edit or delete it.
+- The reviews section lists the reviews of every course the instructor teaches, each marked with the course it was for.
 - The author of the course sees Edit and Delete buttons, and cannot book or review their own course.
 
 **Create / Edit / Delete actions:**
@@ -55,7 +56,7 @@ There are two account types, chosen at registration and fixed afterwards:
 - Only an instructor can create a course, and becomes its author.
 - Only the author can edit or delete a course.
 - Both rules are enforced twice: the links, buttons and routes are hidden from everyone else, and the database rejects the request through Row Level Security.
-- Reviews follow the same author rule: only the author of a review can edit or delete it.
+- Reviews follow the same author rule: only the author of a review can edit or delete it. The database also refuses a review from someone who did not book the course, or before the course has started.
 
 ## 3. Authentication & Session Handling
 
@@ -103,7 +104,7 @@ Seven of these pages are dynamic (they render data loaded from the API): Home, C
 
 ### Catalog / List Page
 
-**Data displayed:** a grid of course cards. Each card shows the image, title, category, venue, start date, price, places left and average rating. A course whose start time has passed shows "Already started" in place of the places left.
+**Data displayed:** a grid of course cards. Each card shows the image, title, category, venue, start date, price, places left, and the instructor's name and average rating. A course whose start time has passed shows "Already started" in place of the places left.
 
 **Interaction:**
 
@@ -118,7 +119,7 @@ Search, filters and sort are sent to the API as query parameters, so the databas
 
 **Navigation:** each card is a `<Link>` to `/courses/:courseId`. `useNavigate` is used for redirects after an action (after create, edit, delete, login and logout).
 
-**Route parameters:** the page reads `courseId` with `useParams` and uses it to load the course and its reviews.
+**Route parameters:** the page reads `courseId` with `useParams` and uses it to load the course, then the reviews of its instructor.
 
 ## 6. Data Source & Backend
 
@@ -126,7 +127,7 @@ Search, filters and sort are sent to the API as query parameters, so the databas
 
 Real backend: **Supabase** (Backend-as-a-Service) providing a hosted PostgreSQL database, authentication and an auto-generated REST API. The React app talks to it through the `@supabase/supabase-js` client.
 
-Tables: `profiles`, `courses`, `bookings`, `reviews`, plus a `course_catalog` view that adds the instructor name, places left and average rating to each course. The full schema is in `supabase/schema.sql`.
+Tables: `profiles`, `courses`, `bookings`, `reviews`, plus a `course_catalog` view that adds the instructor name, places left and the instructor's average rating to each course. The full schema is in `supabase/schema.sql`.
 
 Access rules live in the database (Row Level Security), not only in the UI: anyone can read courses and reviews, only an instructor can publish a course, only the author can change a course or a review, and a booking is visible only to the user who made it.
 
@@ -144,7 +145,7 @@ An instructor opens `/courses/create` and fills in the course form. After valida
 
 - **Home:** the next upcoming courses
 - **Catalog:** upcoming courses by default, or past or all courses, with search, category filter and sort
-- **Course details:** one course by id, with its reviews
+- **Course details:** one course by id, with the reviews of all its instructor's courses
 - **My courses:** courses where the current instructor is the author
 - **My bookings:** the current user's bookings with their courses
 
@@ -163,7 +164,7 @@ The author clicks Delete on the details page and confirms in a dialog. The app s
 ### Interaction with existing records
 
 - **Booking:** a logged-in user (learner or instructor) books or cancels a place from the details page. The places-left counter updates straight away. The database refuses a booking if the course is full, has already started, or belongs to the user.
-- **Reviews:** a logged-in user adds a rating and comment, and can edit or delete their own review. The list and the average rating update without leaving the page.
+- **Reviews:** a user who booked a course adds a rating and comment once it has started, and can edit or delete their own review. The list and the instructor's average rating update without leaving the page. The database refuses a review from anyone who did not book the course, or before it has started.
 
 ## 8. Forms & Validation
 
@@ -261,7 +262,8 @@ Every page that loads data has three states: a loader while waiting, the content
 - Catalog with no results: "No courses match your search" with a button to clear the filters
 - My bookings with nothing in it: a short message and a link to the catalog
 - My courses with nothing in it: a short message and a link to Create course
-- A course with no reviews: "No reviews yet"
+- An instructor with no reviews: "No reviews for this instructor yet" on the details page, "No reviews yet" on the card
+- A course the user has not booked: "Only people who booked this course can review it." in place of the review form; booked but not started: "You can review this course once it has started."
 - A course with no photo, or a photo that fails to load: a placeholder of the same size, on the card and on the details page
 - A course id that does not exist: a "Course not found" message with a link back to the catalog
 - An unknown URL: the Not found page
