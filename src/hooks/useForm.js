@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 // A radio group is a list of inputs, so focus goes to its first radio.
 function focusField(form, name) {
@@ -12,6 +12,8 @@ export function useForm({ initialValues, validate, onSubmit }) {
   const [touched, setTouched] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  // true from a press on the submit button until the blur it causes
+  const isPressingSubmit = useRef(false)
 
   const allErrors = validate(values)
   // Show an error only after the user has left that field or pressed submit.
@@ -22,13 +24,26 @@ export function useForm({ initialValues, validate, onSubmit }) {
     setValues((current) => ({ ...current, [name]: type === 'checkbox' ? checked : value }))
   }
 
+  // Pressing the submit button blurs the field the user was in before the click lands. Showing that
+  // field's error on that blur would push the button down, the release would miss it, and the click
+  // would be lost. So that one blur shows nothing; the submit shows every error anyway.
+  // pointerdown fires before the blur in every browser, also where buttons do not take focus.
+  function handlePointerDown(event) {
+    isPressingSubmit.current = event.target.closest('button[type="submit"]') !== null
+  }
+
   function handleBlur(event) {
+    if (isPressingSubmit.current) {
+      isPressingSubmit.current = false
+      return
+    }
     const { name } = event.target
     setTouched((current) => ({ ...current, [name]: true }))
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
+    isPressingSubmit.current = false
     setTouched(Object.fromEntries(Object.keys(values).map((name) => [name, true])))
 
     const [firstInvalid] = Object.keys(allErrors)
@@ -48,5 +63,5 @@ export function useForm({ initialValues, validate, onSubmit }) {
     }
   }
 
-  return { values, errors, isSubmitting, submitError, handleChange, handleBlur, handleSubmit }
+  return { values, errors, isSubmitting, submitError, handleChange, handleBlur, handlePointerDown, handleSubmit }
 }

@@ -31,7 +31,7 @@ export default function CourseForm({ initialValues, submitLabel, onSubmit, cance
   }
 
   return (
-    <form className={styles.form} onSubmit={form.handleSubmit} noValidate>
+    <form className={styles.form} onSubmit={form.handleSubmit} onPointerDown={form.handlePointerDown} noValidate>
       <section className={styles.section}>
         <div>
           <h2 className={styles.heading}>About the course</h2>

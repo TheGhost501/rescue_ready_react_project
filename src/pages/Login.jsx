@@ -29,7 +29,7 @@ export default function Login() {
           </>
         }
       >
-        <form onSubmit={form.handleSubmit} noValidate>
+        <form onSubmit={form.handleSubmit} onPointerDown={form.handlePointerDown} noValidate>
           {form.submitError && <ErrorMessage message={form.submitError} />}
           <Field
             label="Email"
