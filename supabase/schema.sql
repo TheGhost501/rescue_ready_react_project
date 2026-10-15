@@ -2,7 +2,8 @@
 -- Run once in the Supabase SQL Editor on a fresh project.
 --
 -- Tables:   profiles, courses, bookings, reviews
--- View:     course_catalog (courses + instructor name, places left, rating)
+-- View:     course_catalog (courses + instructor name, places left, course and
+--           instructor rating)
 -- Security: Row Level Security on every table. The React app talks to the
 --           database directly, so these policies are the real access control.
 
@@ -203,6 +204,37 @@ create trigger reviews_before_update
   before update on public.reviews
   for each row execute function public.reviews_before_update();
 
+-- Reviews: only someone who booked the course can review it, and only once it
+-- has started (the same moment bookings close). The author can never book
+-- their own course, so this also keeps them from reviewing it.
+create function public.reviews_before_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not exists (
+    select 1
+    from public.bookings b
+    where b.course_id = new.course_id
+      and b.user_id = new.user_id
+  ) then
+    raise exception 'You can only review a course you booked.';
+  end if;
+
+  if (select c.starts_at from public.courses c where c.id = new.course_id) > now() then
+    raise exception 'You can review a course once it has started.';
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger reviews_before_insert
+  before insert on public.reviews
+  for each row execute function public.reviews_before_insert();
+
 -- ---------------------------------------------------------------------------
 -- Catalog view
 -- ---------------------------------------------------------------------------
@@ -239,7 +271,9 @@ select
   b.booked_count,
   greatest(c.capacity - b.booked_count, 0) as places_left,
   r.review_count,
-  r.average_rating
+  r.average_rating,
+  ir.instructor_review_count,
+  ir.instructor_average_rating
 from public.courses c
 join public.profiles p on p.id = c.owner_id
 cross join lateral (
@@ -251,7 +285,17 @@ cross join lateral (
     round(avg(rv.rating), 1) as average_rating
   from public.reviews rv
   where rv.course_id = c.id
-) r;
+) r
+-- The instructor's rating: every review on every course they teach. This is
+-- what the app shows, so an upcoming course carries its instructor's record.
+cross join lateral (
+  select
+    count(*)::integer as instructor_review_count,
+    round(avg(rv.rating), 1) as instructor_average_rating
+  from public.reviews rv
+  join public.courses oc on oc.id = rv.course_id
+  where oc.owner_id = c.owner_id
+) ir;
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
@@ -322,6 +366,7 @@ create policy "Users can cancel their own bookings"
 
 -- reviews: anyone can read, authors manage their own,
 -- and an instructor cannot review their own course
+-- (reviews_before_insert adds: booked the course, and it has started)
 create policy "Reviews are visible to everyone"
   on public.reviews for select
   to anon, authenticated

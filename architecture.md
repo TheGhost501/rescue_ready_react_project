@@ -159,7 +159,7 @@ Guard behaviour:
 |---|---|---|
 | Home | CourseCard | Next upcoming courses |
 | Catalog | CourseFilters, CourseCard, Spinner, ErrorMessage, EmptyState | Courses, filtered (title, category, upcoming or past) and sorted by the API |
-| Course details | CourseImage, BookingButton, ReviewList, ReviewForm, ConfirmDialog | One course, its reviews, the user's booking |
+| Course details | CourseImage, BookingButton, ReviewList, ReviewForm, ConfirmDialog | One course, the user's booking, then the reviews of every course its instructor teaches |
 | Create course | CourseForm | – |
 | Edit course | CourseForm | One course |
 | My courses | CourseCard, EmptyState | Courses the instructor teaches |
@@ -239,7 +239,8 @@ erDiagram
 - `profiles.id` is the same value as the user's id in Supabase Auth. A database trigger creates the profile when a user registers.
 - `profiles.role` is `learner` or `instructor`. It is set at registration and cannot be changed by the user.
 - A user can have one booking and one review per course.
-- The `course_catalog` view returns each course with the instructor's name, the number of places booked, the places left, the number of reviews and the average rating. Catalog, details, home and "my courses" read from this view.
+- The `course_catalog` view returns each course with the instructor's name, the number of places booked, the places left, the course's own review count and average rating, and the instructor's review count and average rating across all their courses. Catalog, details, home and "my courses" read from this view. The app shows the instructor's rating.
+- A review belongs to the course it was written for, and can only be written by someone who booked that course, once it has started. The rating it gives counts toward the instructor, so an upcoming course shows its instructor's record before anyone has attended it.
 - A course is never removed when its start time passes. It stays in the database with its bookings and reviews, can no longer be booked, and moves from the catalog's Upcoming list to its Past list.
 
 ### Who can do what (Row Level Security)
@@ -249,7 +250,7 @@ erDiagram
 | `profiles` | Everyone | Trigger only | Own name only | – |
 | `courses` | Everyone | Instructors | Author | Author |
 | `bookings` | Own bookings | Logged-in users, for themselves | – | Own bookings |
-| `reviews` | Everyone | Logged-in users, not on their own course | Author | Author |
+| `reviews` | Everyone | Logged-in users who booked the course, once it has started (a trigger checks this), not on their own course | Author | Author |
 
 ### Rules enforced by the database
 
@@ -260,6 +261,8 @@ erDiagram
 | An instructor cannot book their own course | You cannot book a place on your own course. |
 | A course that has started cannot be booked | This course has already started. |
 | A full course cannot be booked | This course is fully booked. |
+| Only someone who booked a course can review it | You can only review a course you booked. |
+| A course cannot be reviewed before it starts | You can review a course once it has started. |
 
 Field lengths, ranges and allowed categories are repeated as `CHECK` constraints, so the client-side validation is a convenience and not the only protection.
 
