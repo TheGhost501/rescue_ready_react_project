@@ -11,6 +11,19 @@ export const CATEGORIES = [
   { value: 'health-safety', label: 'Health & safety' },
 ]
 
+// Catalog date filter. A course is past from its start time.
+export const WHEN_OPTIONS = [
+  { value: 'upcoming', label: 'Upcoming' },
+  { value: 'past', label: 'Past' },
+  { value: 'all', label: 'All dates' },
+]
+
+// Catalog sort order. The values are what getCourses expects.
+export const SORT_OPTIONS = [
+  { value: 'starts_at', label: 'Start date' },
+  { value: 'price', label: 'Price: low to high' },
+]
+
 // Must match the price check in supabase/schema.sql.
 export const MAX_PRICE = 9999.99
 

@@ -1,3 +1,11 @@
+/* The empty message with its "Clear filters" button centred under it. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: var(--space-12);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));

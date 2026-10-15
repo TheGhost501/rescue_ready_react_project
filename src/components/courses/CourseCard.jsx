@@ -1,18 +1,20 @@
 import { Link } from 'react-router'
 import {
+  formatAvailability,
   formatBookedCount,
   formatCategory,
   formatDateTime,
-  formatPlacesLeft,
   formatPrice,
   formatRating,
+  isStarted,
 } from '../../utils/formatters'
 import CourseImage from './CourseImage'
 import styles from './CourseCard.module.css'
 
 // showBookedCount: for the instructor's own list, show '3 of 12 booked' in place of the places left.
 export default function CourseCard({ course, showBookedCount = false }) {
-  const isFull = course.places_left <= 0
+  // Red only for a course that is full and can still be booked; a started course is neutral.
+  const isFull = course.places_left <= 0 && !isStarted(course.starts_at)
 
   return (
     <article className={styles.card}>
@@ -29,7 +31,7 @@ export default function CourseCard({ course, showBookedCount = false }) {
           <li>{course.location}</li>
           {/* The rating is the instructor's, across all their courses. */}
           <li>
-            {course.instructor_name} · {formatRating(course.instructor_average_rating, course.instructor_review_count)}
+            Instructor {course.instructor_name} · {formatRating(course.instructor_average_rating, course.instructor_review_count)}
           </li>
         </ul>
         <div className={styles.footer}>
@@ -37,7 +39,9 @@ export default function CourseCard({ course, showBookedCount = false }) {
           {showBookedCount ? (
             <span className={styles.places}>{formatBookedCount(course.booked_count, course.capacity)}</span>
           ) : (
-            <span className={isFull ? styles.full : styles.places}>{formatPlacesLeft(course.places_left)}</span>
+            <span className={isFull ? styles.full : styles.places}>
+              {formatAvailability(course.starts_at, course.places_left)}
+            </span>
           )}
         </div>
       </div>

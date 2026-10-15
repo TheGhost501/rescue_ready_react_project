@@ -1,0 +1,32 @@
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+/* Search across the whole row, the three selects side by side under it. */
+@media (min-width: 36rem) {
+  .filters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .search {
+    grid-column: 1 / -1;
+  }
+}
+
+/* One row on wide screens: the search box gets the most room. */
+@media (min-width: 64rem) {
+  .filters {
+    grid-template-columns: 2fr repeat(3, minmax(0, 1fr));
+  }
+
+  .search {
+    grid-column: auto;
+  }
+}

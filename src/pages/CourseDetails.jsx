@@ -236,7 +236,11 @@ export default function CourseDetails() {
         <h1 className={styles.title}>{course.title}</h1>
         <p className={styles.byline}>
           <span>Taught by {course.instructor_name}</span>
-          <span>Instructor rating {formatRating(course.instructor_average_rating, course.instructor_review_count)}</span>
+          <span>
+            {course.instructor_review_count > 0
+              ? `Instructor rating ${formatRating(course.instructor_average_rating, course.instructor_review_count)}`
+              : 'Instructor not reviewed yet'}
+          </span>
         </p>
       </header>
       <div className={styles.layout}>

@@ -42,6 +42,17 @@ export function formatPlacesLeft(placesLeft) {
   return placesLeft === 1 ? '1 place left' : `${placesLeft} places left`
 }
 
+// From its start time a course can no longer be booked, the same rule the database uses.
+export function isStarted(startsAt) {
+  return new Date(startsAt) <= new Date()
+}
+
+// Started -> 'Already started', otherwise the places left.
+export function formatAvailability(startsAt, placesLeft) {
+  if (isStarted(startsAt)) return 'Already started'
+  return formatPlacesLeft(placesLeft)
+}
+
 // (3, 12) -> '3 of 12 booked'
 export function formatBookedCount(bookedCount, capacity) {
   return `${bookedCount} of ${capacity} booked`

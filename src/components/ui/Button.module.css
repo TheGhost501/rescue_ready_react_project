@@ -1,5 +1,10 @@
+/* inline-flex and no underline, so a link rendered with as={Link} looks the same as a button. */
 .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: var(--control-height);
+  text-decoration: none;
   padding: var(--space-2) var(--space-4);
   border: 2px solid transparent;
   border-radius: var(--radius-md);

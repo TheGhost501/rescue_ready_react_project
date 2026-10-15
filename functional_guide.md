@@ -111,7 +111,8 @@ Seven of these pages are dynamic (they render data loaded from the API): Home, C
 - **Search** by title (text input, applied after a short pause in typing)
 - **Filter** by category
 - **Filter** by date: Upcoming (the default), Past or All. A course counts as past from its start time, which is also the moment it can no longer be booked.
-- **Sort** by start date or price
+- **Sort** by start date (soonest first; on Past, the most recent first) or by price (lowest first, courses with the same price in date order)
+- A search or filter with no results shows "No courses match your search." and a "Clear filters" button, which also puts the date filter back on Upcoming
 
 Search, filters and sort are sent to the API as query parameters, so the database does the work and not the browser.
 
@@ -143,7 +144,7 @@ An instructor opens `/courses/create` and fills in the course form. After valida
 
 ### Read (GET)
 
-- **Home:** the next upcoming courses
+- **Home:** the next three upcoming courses
 - **Catalog:** upcoming courses by default, or past or all courses, with search, category filter and sort
 - **Course details:** one course by id, with the reviews of all its instructor's courses
 - **My courses:** courses where the current instructor is the author
@@ -259,7 +260,8 @@ Every page that loads data has three states: a loader while waiting, the content
 
 ### Empty or missing data states
 
-- Catalog with no results: "No courses match your search" with a button to clear the filters
+- Catalog with no results: "No courses match your search" with a button to clear the filters; with the default filters and nothing to show, "There are no upcoming courses right now."
+- Home with no upcoming courses: "No upcoming courses right now."
 - My bookings with nothing in it: a short message and a link to the catalog
 - My courses with nothing in it: a short message and a link to Create course
 - An instructor with no reviews: "No reviews for this instructor yet" on the details page, "No reviews yet" on the card
