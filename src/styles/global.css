@@ -11,6 +11,13 @@ body {
     background: var(--color-background);
 }
 
+/* The body's 1.6 suits paragraphs; headings need tighter lines. */
+h1,
+h2,
+h3 {
+    line-height: 1.2;
+}
+
 :focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
