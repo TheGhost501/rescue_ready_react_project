@@ -47,7 +47,8 @@ flowchart LR
 ├── index.html
 ├── vite.config.js
 ├── supabase/
-│   └── schema.sql              tables, view, triggers, RLS policies
+│   ├── schema.sql              tables, view, triggers, RLS policies
+│   └── seed.sql                demo courses, bookings and reviews
 └── src/
     ├── main.jsx                entry point: router and auth provider
     ├── App.jsx                 route table

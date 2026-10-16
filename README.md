@@ -59,6 +59,7 @@ npm install
 1. Create a project at [supabase.com](https://supabase.com).
 2. Open the SQL Editor, paste the contents of [`supabase/schema.sql`](supabase/schema.sql) and run it. This creates the tables, the catalog view, the triggers and the Row Level Security policies.
 3. In the Authentication settings, turn off "Confirm email" for the Email provider, so that new users are logged in straight after registering.
+4. Optional, for demo data: start the app (step 4 below), register the four accounts listed at the top of [`supabase/seed.sql`](supabase/seed.sql), then run that file in the SQL Editor.
 
 ### 3. Configure environment variables
 
@@ -104,6 +105,7 @@ src/
   styles/       design tokens and global styles
 supabase/
   schema.sql    database schema and security policies
+  seed.sql      demo courses, bookings and reviews
 ```
 
 The architecture, data model, routing and key flows are described in [`architecture.md`](architecture.md).
