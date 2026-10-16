@@ -47,6 +47,7 @@ flowchart LR
 .
 ├── index.html
 ├── vite.config.js
+├── vercel.json                 every URL serves index.html, so a refresh on any route works
 ├── supabase/
 │   ├── schema.sql              tables, view, triggers, RLS policies
 │   └── seed.sql                demo courses, bookings and reviews

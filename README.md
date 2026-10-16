@@ -4,9 +4,7 @@ A booking platform for safety and first aid training courses. Instructors publis
 
 Built as the exam project for the SoftUni ReactJS course.
 
-> **Status:** in development. The application is not deployed yet.
-
-**Live demo:** not deployed yet
+**Live demo:** [rescue-ready-react-project.vercel.app](https://rescue-ready-react-project.vercel.app/)
 
 ## Demo accounts
 
