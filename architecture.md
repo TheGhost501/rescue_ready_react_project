@@ -12,7 +12,8 @@ RescueReady is a single page application for booking safety and first aid traini
 | Backend | Supabase | Hosted PostgreSQL, authentication, REST API |
 | Backend client | `@supabase/supabase-js` 2 | All network communication |
 | Styling | CSS Modules + design tokens | One `.module.css` per component, shared CSS variables |
-| Tests | Vitest + React Testing Library | Unit tests for validators, hooks and guards |
+| Tests | Vitest + React Testing Library | Unit tests for validators, route guards and the Login form |
+| Lint | Oxlint | `npm run lint` |
 | Hosting | Vercel (frontend), Supabase (backend) | Both publicly reachable |
 
 ## 2. System overview
@@ -81,11 +82,11 @@ flowchart LR
     └── test/                   test setup
 ```
 
-Each component lives next to its own `Component.module.css`.
+Each component lives next to its own `Component.module.css`. Test files sit next to the file they test (`utils/validators.test.js`, `guards/guards.test.jsx`, `pages/Login.test.jsx`).
 
 ## 4. Layers
 
-Code depends in one direction only. A page may use components, hooks and services. A component never calls Supabase directly; it goes through a service.
+Code depends in one direction only. A page may use components, hooks and services. A component never calls Supabase directly; it goes through a service. The one component that calls a service is `BookingButton`, so that its optimistic state stays inside it.
 
 ```mermaid
 flowchart TD
@@ -93,18 +94,20 @@ flowchart TD
   pages --> hooks[Hooks]
   components --> hooks
   pages --> services[Services]
+  components -- "BookingButton only" --> services
   hooks --> context[AuthContext]
   context --> services
   services --> client[Supabase client]
+  context -- "session and auth events" --> client
   client --> backend[(Supabase)]
 ```
 
 | Layer | Responsibility | Knows about |
 |---|---|---|
 | Pages | Load data for a route, hold page state, compose components | Components, hooks, services |
-| Components | Render props, raise events | Hooks, other components |
+| Components | Render props, raise events | Hooks, other components; `BookingButton` also uses the booking service |
 | Hooks | Reusable stateful logic | Context |
-| Context | Who is logged in | Auth service |
+| Context | Who is logged in | Auth service; the Supabase client for `getSession` and `onAuthStateChange` |
 | Services | One function per API operation; turn errors into readable messages | Supabase client |
 | Supabase client | Connection settings | Environment variables |
 
@@ -158,7 +161,7 @@ Guard behaviour:
 
 | Page | Built from | Data it loads |
 |---|---|---|
-| Home | CourseCard | Next upcoming courses |
+| Home | CourseCard, Button | Next upcoming courses |
 | Catalog | CourseFilters, CourseCard, Spinner, ErrorMessage, EmptyState | Courses, filtered (title, category, upcoming or past) and sorted by the API |
 | Course details | CourseImage, BookingButton, ReviewList, ReviewForm, ConfirmDialog | One course, the user's booking, then the reviews of every course its instructor teaches |
 | Create course | CourseForm | – |
@@ -166,7 +169,9 @@ Guard behaviour:
 | My courses | CourseCard, EmptyState | Courses the instructor teaches |
 | My bookings | EmptyState | The user's bookings with their courses |
 | Login, Register | FormCard, Field, RadioGroup (Register only), Button, ErrorMessage | – |
-| Not found | – | – |
+| Not found | EmptyState | – |
+
+Every page that loads data also uses `Spinner`, `ErrorMessage` and `EmptyState` for its loading, error and empty states.
 
 `CourseForm` is shared by Create and Edit. `Button`, `Field` and `RadioGroup` (a set of radio buttons with one legend and one error) are the only button and form-field components, so every form looks and behaves the same. `FormCard` is the centred card around the Login and Register forms.
 
@@ -311,7 +316,8 @@ sequenceDiagram
   else course full, started or own course
     D-->>V: error with a message
     V-->>K: throws the message
-    K-->>U: rolls back and shows the message
+    K->>D: reload course and booking
+    K-->>U: rolls back to the real numbers and shows the message
   end
 ```
 
